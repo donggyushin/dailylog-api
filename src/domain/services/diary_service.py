@@ -41,6 +41,7 @@ class DiaryService:
         self, current_user: User, title: Optional[str], content: str
     ) -> Diary:
         diary = Diary(
+            id=str(ObjectId()),
             user_id=current_user.id,
             chat_session_id="",
             title=title,
@@ -297,6 +298,7 @@ Diary content:
         content = content_match.group(1).strip() if content_match else content_text
 
         diary = Diary(
+            id=str(ObjectId()),
             user_id=target_message.user_id,
             chat_session_id=session_id,
             title=title,

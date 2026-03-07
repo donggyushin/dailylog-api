@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 
 class Diary(BaseModel):
-    id: str = Field(default="")
+    id: str = Field()
     user_id: str = Field()
     chat_session_id: str = Field()
     title: Optional[str] = Field()
