@@ -13,6 +13,7 @@ from src.domain.interfaces.email_sender import EmailSender
 from src.domain.interfaces.email_verification_code_repository import (
     EmailVerificationCodeRepository,
 )
+from src.domain.interfaces.emotion_analyzer import EmotionAnalyzer
 from src.domain.interfaces.hasher import Hasher
 from src.domain.interfaces.image_generator import ImageGenerator
 from src.domain.interfaces.image_storage import ImageStorage
@@ -29,6 +30,7 @@ from src.domain.services.diary_service import DiaryService
 from src.domain.services.email_verification_service import EmailVerificationService
 from src.domain.services.user_profile_service import UserProfileService
 from src.infrastructure.anthropic_ai_chat_bot import AnthropicAIChatBot
+from src.infrastructure.anthropic_emotion_analyzer import AnthropicEmotionAnalyzer
 from src.infrastructure.bcrypt_hasher import BcryptHasher
 from src.infrastructure.cloudflare_r2_storage import CloudflareR2Storage
 from src.infrastructure.dall_e_image_generator import DallEImageGenerator
@@ -196,6 +198,10 @@ def get_image_storage() -> ImageStorage:
     return CloudflareR2Storage()
 
 
+def get_emotion_analyzer() -> EmotionAnalyzer:
+    return AnthropicEmotionAnalyzer()
+
+
 def get_chat_history_service(
     chat_repository: Annotated[ChatRepository, Depends(get_chat_repository)],
     diary_repository: Annotated[DiaryRepository, Depends(get_diary_repository)],
@@ -222,6 +228,7 @@ def get_diary_service(
         PaymentsRepository, Depends(get_payments_repository)
     ],
     user_repository: Annotated[UserRepository, Depends(get_user_repository)],
+    emotion_analyzer: Annotated[EmotionAnalyzer, Depends(get_emotion_analyzer)],
 ) -> DiaryService:
     return DiaryService(
         diary_repository,
@@ -231,6 +238,7 @@ def get_diary_service(
         image_storage,
         payments_repository,
         user_repository,
+        emotion_analyzer,
     )
 
 

@@ -5,10 +5,12 @@ from pydantic import BaseModel, Field
 
 
 class Emotion(str, Enum):
-    GOOD = "good"
-    BAD = "bad"
-    GLOOMY = "gloomy"
-    NORMAL = "normal"
+    HAPPY = "happy"        # 기쁨, 행복
+    SAD = "sad"            # 슬픔
+    ANGRY = "angry"        # 화남, 짜증
+    ANXIOUS = "anxious"    # 불안, 걱정
+    PEACEFUL = "peaceful"  # 평온, 차분
+    NORMAL = "normal"      # 평범, 무난
 
 
 class Diary(BaseModel):

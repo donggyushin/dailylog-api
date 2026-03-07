@@ -12,6 +12,7 @@ from src.domain.exceptions import NotFoundError
 from src.domain.interfaces.ai_chat_bot import AIChatBot
 from src.domain.interfaces.chat_repository import ChatRepository
 from src.domain.interfaces.diary_repository import DiaryRepository
+from src.domain.interfaces.emotion_analyzer import EmotionAnalyzer
 from src.domain.interfaces.image_generator import ImageGenerator
 from src.domain.interfaces.image_storage import ImageStorage
 from src.domain.interfaces.payments_repository import PaymentsRepository
@@ -28,6 +29,7 @@ class DiaryService:
         image_storage: ImageStorage,
         payments_repository: PaymentsRepository,
         user_repository: UserRepository,
+        emotion_analyzer: EmotionAnalyzer,
     ):
         self.diary_repository = diary_repository
         self.chat_repository = chat_repository
@@ -36,10 +38,14 @@ class DiaryService:
         self.image_storage = image_storage
         self.payments_repository = payments_repository
         self.user_repository = user_repository
+        self.emotion_analyzer = emotion_analyzer
 
     async def write_diary_direct(
         self, current_user: User, title: Optional[str], content: str
     ) -> Diary:
+        # Analyze emotion from diary content
+        emotion = await self.emotion_analyzer.analyze(content)
+
         diary = Diary(
             id=str(ObjectId()),
             user_id=current_user.id,
@@ -47,6 +53,7 @@ class DiaryService:
             title=title,
             content=content,
             user_wrote_this_diary_directly=True,
+            emotion=emotion,
         )
 
         diary = await self.diary_repository.create(diary)
@@ -297,6 +304,9 @@ Diary content:
         )
         content = content_match.group(1).strip() if content_match else content_text
 
+        # Analyze emotion from diary content
+        emotion = await self.emotion_analyzer.analyze(content)
+
         diary = Diary(
             id=str(ObjectId()),
             user_id=target_message.user_id,
@@ -304,6 +314,7 @@ Diary content:
             title=title,
             content=content,
             thumbnail_url=None,
+            emotion=emotion,
         )
 
         diary = await self.diary_repository.create(diary)
