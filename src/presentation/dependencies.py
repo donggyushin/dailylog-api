@@ -27,6 +27,7 @@ from src.domain.services.auth_service import AuthService
 from src.domain.services.change_password_service import ChangePasswordService
 from src.domain.services.chat_history_service import ChatHistoryService
 from src.domain.services.diary_service import DiaryService
+from src.domain.services.diary_statistics_service import DiaryStatisticsService
 from src.domain.services.email_verification_service import EmailVerificationService
 from src.domain.services.user_profile_service import UserProfileService
 from src.infrastructure.anthropic_ai_chat_bot import AnthropicAIChatBot
@@ -240,6 +241,12 @@ def get_diary_service(
         user_repository,
         emotion_analyzer,
     )
+
+
+def get_diary_statistics_service(
+    diary_repository: Annotated[DiaryRepository, Depends(get_diary_repository)],
+) -> DiaryStatisticsService:
+    return DiaryStatisticsService(diary_repository)
 
 
 # HTTPBearer security scheme

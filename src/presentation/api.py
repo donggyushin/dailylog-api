@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from datetime import date
+from datetime import date, timedelta
 from typing import Annotated, List, Optional
 
 from fastapi import Depends, FastAPI, File, HTTPException, Query, UploadFile, status
@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from src.domain.entities.chat import ChatMessage, ChatSession
-from src.domain.entities.diary import Diary
+from src.domain.entities.diary import Diary, Emotion
 from src.domain.entities.user import Gender, User
 from src.domain.exceptions import (
     EmailAlreadyExistsError,
@@ -22,6 +22,7 @@ from src.domain.services.auth_service import AuthService
 from src.domain.services.change_password_service import ChangePasswordService
 from src.domain.services.chat_history_service import ChatHistoryService
 from src.domain.services.diary_service import DiaryService
+from src.domain.services.diary_statistics_service import DiaryStatisticsService
 from src.domain.services.email_verification_service import EmailVerificationService
 from src.domain.services.user_profile_service import UserProfileService
 from src.infrastructure.database import connect_to_mongo, close_mongo_connection
@@ -31,6 +32,7 @@ from src.presentation.dependencies import (
     get_chat_history_service,
     get_current_user,
     get_diary_service,
+    get_diary_statistics_service,
     get_email_verification_service,
     get_user_profile_service,
 )
@@ -115,6 +117,26 @@ class GetNextAndPrevDiariesResponse(BaseModel):
 class WriteDiaryDirectRequest(BaseModel):
     title: Optional[str]
     content: str
+
+
+# Emotion Timeline Models
+class EmotionTimelinePoint(BaseModel):
+    diary_date: date = Field(description="Diary write date")
+    emotion: Emotion = Field(description="Detected emotion")
+    diary_id: str = Field(description="Diary ID for navigation")
+    title: Optional[str] = Field(default=None, description="Diary title")
+
+
+class EmotionSummary(BaseModel):
+    total_count: int = Field(description="Total diaries in range")
+    date_range: dict = Field(description="Actual date range {start, end}")
+    emotion_counts: dict[str, int] = Field(description="Count by emotion type")
+    most_common_emotion: Optional[str] = Field(default=None, description="Most frequent emotion")
+
+
+class EmotionTimelineResponse(BaseModel):
+    timeline: List[EmotionTimelinePoint]
+    summary: EmotionSummary
 
 
 # ========================================
@@ -456,6 +478,63 @@ async def get_diary_list(
 ):
     diaries = await diary_service.get_diary_list(current_user, cursor_id, size)
     return diaries
+
+
+@app.get(
+    "/api/v1/diaries/emotions/timeline",
+    response_model=EmotionTimelineResponse,
+    status_code=status.HTTP_200_OK,
+    tags=["Diaries"],
+)
+async def get_emotion_timeline(
+    current_user: Annotated[User, Depends(get_current_user)],
+    statistics_service: Annotated[DiaryStatisticsService, Depends(get_diary_statistics_service)],
+    start_date: Annotated[Optional[date], Query(description="Filter start date (inclusive)")] = None,
+    end_date: Annotated[Optional[date], Query(description="Filter end date (inclusive)")] = None,
+):
+    """
+    Get emotion timeline data for visualizing mood changes over time.
+
+    Returns timeline of emotions from user's diaries with summary statistics.
+    Only includes diaries with analyzed emotions.
+    """
+    # 날짜 범위 기본값: 최근 90일
+    if start_date is None and end_date is None:
+        end_date = date.today()
+        start_date = end_date - timedelta(days=90)
+
+    # 날짜 범위 검증
+    if start_date and end_date and start_date > end_date:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="start_date must be before or equal to end_date"
+        )
+
+    try:
+        diaries, summary = await statistics_service.get_emotions_timeline(
+            current_user.id, start_date, end_date
+        )
+
+        # Response 형식으로 변환 (defensive check for None emotions)
+        timeline = []
+        for diary in diaries:
+            if diary.emotion is not None:  # Type narrowing for mypy
+                timeline.append(EmotionTimelinePoint(
+                    diary_date=diary.writed_at,
+                    emotion=diary.emotion,
+                    diary_id=diary.id,
+                    title=diary.title
+                ))
+
+        return EmotionTimelineResponse(
+            timeline=timeline,
+            summary=EmotionSummary(**summary)
+        )
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to fetch emotion timeline: {str(e)}"
+        )
 
 
 @app.get("/api/v1/diary", response_model=Diary, tags=["Diaries"])
