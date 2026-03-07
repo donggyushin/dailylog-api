@@ -22,4 +22,4 @@ class Diary(BaseModel):
     created_at: datetime = Field(default_factory=datetime.now)
     updated_at: datetime = Field(default_factory=datetime.now)
     user_wrote_this_diary_directly: bool = Field(default=False)
-    emotion: Optional[Emotion] = Field()
+    emotion: Optional[Emotion] = Field(default=None)
