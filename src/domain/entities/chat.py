@@ -13,11 +13,11 @@ class MessageRole(str, Enum):
 
 
 class ChatMessage(BaseModel):
-    id: str = Field(default=str(ObjectId()))
+    id: str = Field(default_factory=lambda: str(ObjectId()))
     user_id: str = Field()
     role: MessageRole = Field()
     content: str = Field()
-    created_at: datetime = Field(default=datetime.now())
+    created_at: datetime = Field(default_factory=datetime.now)
 
 
 class ChatSession(BaseModel):
@@ -25,5 +25,5 @@ class ChatSession(BaseModel):
     user_id: str = Field()
     active: bool = Field(default=True)
     messages: List[ChatMessage] = Field()
-    created_at: datetime = Field(default=datetime.now())
-    updated_at: datetime = Field(default=datetime.now())
+    created_at: datetime = Field(default_factory=datetime.now)
+    updated_at: datetime = Field(default_factory=datetime.now)

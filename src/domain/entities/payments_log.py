@@ -10,8 +10,8 @@ class UserGrade(str, Enum):
 
 
 class PaymentsLog(BaseModel):
-    id: str = Field(default=str(ObjectId()))
-    pay_date: datetime = Field(default=datetime.now())
+    id: str = Field(default_factory=lambda: str(ObjectId()))
+    pay_date: datetime = Field(default_factory=datetime.now)
     grade: UserGrade = Field(default=UserGrade.ONE_DIARY_ONE_DAY)
     user_id: str
     start_date: date
