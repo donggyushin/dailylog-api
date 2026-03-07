@@ -593,7 +593,7 @@ async def change_diary_thumbnail(
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
-@app.patch("/api/v1/diary/{diary_id}/emotion")
+@app.patch("/api/v1/diary/{diary_id}/emotion", tags=["Diaries"])
 async def update_diary_emotion(
     diary_service: Annotated[DiaryService, Depends(get_diary_service)], diary_id: str
 ) -> Diary:
