@@ -39,3 +39,10 @@ class DiaryRepository(ABC):
     @abstractmethod
     async def get_prev_diary(self, diary: Diary) -> Optional[Diary]:
         pass
+
+    @abstractmethod
+    async def get_emotions_timeline(
+        self, user_id: str, start_date: Optional[date], end_date: Optional[date]
+    ) -> List[Diary]:
+        """Get diaries with emotion data for timeline visualization."""
+        pass

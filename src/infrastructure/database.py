@@ -11,6 +11,32 @@ class Database:
 db = Database()
 
 
+async def create_indexes():
+    """MongoDB 인덱스 생성 (성능 최적화)"""
+    if db.db is None:
+        return
+
+    try:
+        # diaries 컬렉션 인덱스
+        diaries_collection = db.db["diaries"]
+
+        # 감정 타임라인 쿼리 최적화 (user_id + writed_at + emotion)
+        await diaries_collection.create_index(
+            [("user_id", 1), ("writed_at", 1), ("emotion", 1)],
+            name="user_date_emotion_idx"
+        )
+
+        # 일기 목록 조회 최적화 (user_id + writed_at 내림차순)
+        await diaries_collection.create_index(
+            [("user_id", 1), ("writed_at", -1)],
+            name="user_date_desc_idx"
+        )
+
+        print("✅ Database indexes created successfully")
+    except Exception as e:
+        print(f"⚠️  Index creation failed (may already exist): {e}")
+
+
 async def connect_to_mongo():
     """MongoDB 연결 (Atlas 및 로컬 모두 지원)"""
 
@@ -40,6 +66,9 @@ async def connect_to_mongo():
     try:
         await db.client.admin.command('ping')
         print(f"✅ Connected to {connection_type}")
+
+        # 인덱스 생성
+        await create_indexes()
     except Exception as e:
         print(f"❌ Failed to connect to {connection_type}: {e}")
         raise
