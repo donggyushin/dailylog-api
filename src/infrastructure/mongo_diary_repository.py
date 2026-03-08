@@ -113,7 +113,7 @@ class MongoDiaryRepository(DiaryRepository):
         # Query 구성
         query = {
             "user_id": user_id,
-            "emotion": {"$ne": None}  # null 감정 제외
+            "emotion": {"$ne": None},  # null 감정 제외
         }
 
         # 날짜 범위 필터
@@ -126,25 +126,15 @@ class MongoDiaryRepository(DiaryRepository):
             query["writed_at"] = date_filter
 
         # 성능 최적화: 필요한 필드만 조회
-        projection = {
-            "_id": 1,
-            "writed_at": 1,
-            "emotion": 1,
-            "title": 1,
-            "user_id": 1
-        }
 
         # 시간순 정렬 (오래된 것부터)
-        cursor = self.collection.find(query, projection).sort("writed_at", 1)
+        cursor = self.collection.find(query).sort("writed_at", 1)
         results = await cursor.to_list(length=None)
 
         # Diary 엔티티로 변환
         diaries = []
         for result in results:
             result["id"] = str(result.pop("_id"))
-            # Projection에서 제외된 필드 기본값 설정
-            result.setdefault("chat_session_id", "")
-            result.setdefault("content", "")
             diaries.append(Diary(**result))
 
         return diaries
