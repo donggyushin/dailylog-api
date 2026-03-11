@@ -38,6 +38,10 @@ class ChangeDiaryThumbnailRequest(BaseModel):
     img_url: str
 
 
+class DiaryTagsUpdateRequest(BaseModel):
+    tags: List[str]
+
+
 class GetNextAndPrevDiariesResponse(BaseModel):
     next: Optional[Diary]
     prev: Optional[Diary]
@@ -297,6 +301,23 @@ async def update_diary(
         return diary
     except Exception as e:
         raise e
+
+
+@router.patch("/diary/{diary_id}/tags", response_model=Diary)
+async def update_diary_tags(
+    diary_service: Annotated[DiaryService, Depends(get_diary_service)],
+    request: DiaryTagsUpdateRequest,
+    diary_id: str,
+):
+    try:
+        diary = await diary_service.update_tags(diary_id, request.tags)
+        return diary
+    except Exception as e:
+        print(f"Error updating thumbnail: {str(e)}")
+        import traceback
+
+        traceback.print_exc()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.patch("/diary/{diary_id}/thumbnail", response_model=Diary)
