@@ -40,6 +40,17 @@ class DiaryService:
         self.user_repository = user_repository
         self.emotion_analyzer = emotion_analyzer
 
+    async def update_saved(self, diary_id: str, value: bool) -> Diary:
+        diary = await self.diary_repository.find_by_id(diary_id)
+
+        if diary is None:
+            raise NotFoundError()
+
+        diary.saved = value
+
+        diary = await self.diary_repository.update(diary)
+        return diary
+
     async def update_tags(self, diary_id: str, tags: List[str]) -> Diary:
         diary = await self.diary_repository.find_by_id(diary_id)
         if diary is None:

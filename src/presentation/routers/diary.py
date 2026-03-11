@@ -288,6 +288,21 @@ async def write_diary_directly(
         raise e
 
 
+@router.post("/diary/{diary_id}/saved", response_model=Diary)
+async def save_diary(
+    diary_service: Annotated[DiaryService, Depends(get_diary_service)], diary_id: str
+):
+    try:
+        diary = await diary_service.update_saved(diary_id, True)
+        return diary
+    except Exception as e:
+        print(f"Error updating thumbnail: {str(e)}")
+        import traceback
+
+        traceback.print_exc()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+
+
 @router.put("/diary/{diary_id}")
 async def update_diary(
     request: WriteDiaryDirectRequest,
@@ -300,7 +315,11 @@ async def update_diary(
         )
         return diary
     except Exception as e:
-        raise e
+        print(f"Error updating thumbnail: {str(e)}")
+        import traceback
+
+        traceback.print_exc()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
 
 
 @router.patch("/diary/{diary_id}/tags", response_model=Diary)
@@ -353,3 +372,18 @@ async def delete_diary(
     diary_service: Annotated[DiaryService, Depends(get_diary_service)], diary_id: str
 ):
     await diary_service.delete(diary_id)
+
+
+@router.delete("/diary/{diary_id}/saved", response_model=Diary)
+async def unsave_diary(
+    diary_service: Annotated[DiaryService, Depends(get_diary_service)], diary_id: str
+):
+    try:
+        diary = await diary_service.update_saved(diary_id, False)
+        return diary
+    except Exception as e:
+        print(f"Error updating thumbnail: {str(e)}")
+        import traceback
+
+        traceback.print_exc()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
