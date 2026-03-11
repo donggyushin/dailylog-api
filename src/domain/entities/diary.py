@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from enum import Enum
-from typing import Optional
+from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
@@ -39,3 +39,5 @@ class Diary(BaseModel):
     updated_at: datetime = Field(default_factory=datetime.now)
     user_wrote_this_diary_directly: bool = Field(default=False)
     emotion: Optional[Emotion] = Field(default=None)
+    saved: bool = Field(default=False)
+    tags: List[str] = Field(default=[])
