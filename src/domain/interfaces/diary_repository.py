@@ -46,3 +46,9 @@ class DiaryRepository(ABC):
     ) -> List[Diary]:
         """Get diaries with emotion data for timeline visualization."""
         pass
+
+    @abstractmethod
+    async def search(
+        self, user_id: str, query: str, cursor_id: Optional[str], size: int
+    ) -> List[Diary]:
+        pass
