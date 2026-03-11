@@ -142,13 +142,14 @@ class MongoDiaryRepository(DiaryRepository):
     async def search(
         self, user_id: str, query: str, cursor_id: Optional[str], size: int
     ) -> List[Diary]:
-        """Search diaries by title or content using regex pattern matching."""
+        """Search diaries by title, content, or tags using regex pattern matching."""
         # 기본 쿼리: 해당 사용자의 일기만 검색
         search_query: dict = {
             "user_id": user_id,
             "$or": [
                 {"title": {"$regex": query, "$options": "i"}},  # 대소문자 무시
                 {"content": {"$regex": query, "$options": "i"}},
+                {"tags": {"$regex": query, "$options": "i"}},  # tags 배열 내 부분 일치
             ],
         }
 
