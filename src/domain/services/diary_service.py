@@ -40,6 +40,14 @@ class DiaryService:
         self.user_repository = user_repository
         self.emotion_analyzer = emotion_analyzer
 
+    async def get_saved_diaries(
+        self, current_user: User, cursor_id: Optional[str], size: int
+    ) -> List[Diary]:
+        diaries = await self.diary_repository.get_saved_diaries(
+            current_user.id, cursor_id, size
+        )
+        return diaries
+
     async def update_saved(self, diary_id: str, value: bool) -> Diary:
         diary = await self.diary_repository.find_by_id(diary_id)
 

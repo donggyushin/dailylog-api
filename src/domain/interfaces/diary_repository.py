@@ -52,3 +52,9 @@ class DiaryRepository(ABC):
         self, user_id: str, query: str, cursor_id: Optional[str], size: int
     ) -> List[Diary]:
         pass
+
+    @abstractmethod
+    async def get_saved_diaries(
+        self, user_id: str, cursor_id: Optional[str], size: int
+    ) -> List[Diary]:
+        pass

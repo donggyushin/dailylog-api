@@ -170,3 +170,31 @@ class MongoDiaryRepository(DiaryRepository):
             diaries.append(Diary(**result))
 
         return diaries
+
+    async def get_saved_diaries(
+        self, user_id: str, cursor_id: Optional[str], size: int
+    ) -> List[Diary]:
+        """저장된 일기 목록 조회 (saved=True인 일기들)"""
+        # 기본 쿼리: 해당 사용자의 저장된 일기만 조회
+        query: dict = {
+            "user_id": user_id,
+            "saved": True
+        }
+
+        # cursor_id가 있으면 해당 일기의 날짜보다 오래된 일기들만 조회
+        if cursor_id:
+            cursor_diary = await self.collection.find_one({"_id": ObjectId(cursor_id)})
+            if cursor_diary:
+                query["writed_at"] = {"$lt": cursor_diary["writed_at"]}
+
+        # 날짜 기준 내림차순 정렬 (최신 일기가 먼저)
+        cursor = self.collection.find(query).sort("writed_at", -1).limit(size)
+        results = await cursor.to_list(length=size)
+
+        # MongoDB 문서를 Diary 엔티티로 변환
+        diaries = []
+        for result in results:
+            result["id"] = str(result.pop("_id"))
+            diaries.append(Diary(**result))
+
+        return diaries

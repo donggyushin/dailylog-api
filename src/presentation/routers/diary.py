@@ -127,6 +127,31 @@ async def search_diaries(
 
 
 @router.get(
+    "/diaries/saved",
+    response_model=List[Diary],
+    status_code=status.HTTP_200_OK,
+)
+async def get_saved_diaries(
+    current_user: Annotated[User, Depends(get_current_user)],
+    diary_service: Annotated[DiaryService, Depends(get_diary_service)],
+    cursor_id: Annotated[
+        Optional[str], Query(description="Cursor ID for pagination")
+    ] = None,
+    size: Annotated[
+        int, Query(ge=1, le=100, description="Number of diaries to fetch")
+    ] = 30,
+):
+    try:
+        diaries = await diary_service.get_saved_diaries(current_user, cursor_id, size)
+        return diaries
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to search diaries: {str(e)}",
+        )
+
+
+@router.get(
     "/diaries/emotions/timeline",
     response_model=EmotionTimelineResponse,
     status_code=status.HTTP_200_OK,
