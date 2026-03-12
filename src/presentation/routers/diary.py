@@ -50,6 +50,7 @@ class GetNextAndPrevDiariesResponse(BaseModel):
 class WriteDiaryDirectRequest(BaseModel):
     title: Optional[str]
     content: str
+    chat_session_id: Optional[str] = Field(default=None)
 
 
 class EmotionTimelinePoint(BaseModel):
@@ -306,7 +307,7 @@ async def write_diary_directly(
 ) -> Diary:
     try:
         diary = await diary_service.write_diary_direct(
-            current_user, request.title, request.content
+            current_user, request.title, request.content, request.chat_session_id
         )
         return diary
     except Exception as e:

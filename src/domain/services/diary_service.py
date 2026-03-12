@@ -88,7 +88,11 @@ class DiaryService:
         return diary
 
     async def write_diary_direct(
-        self, current_user: User, title: Optional[str], content: str
+        self,
+        current_user: User,
+        title: Optional[str],
+        content: str,
+        chat_session_id: Optional[str],
     ) -> Diary:
         # Analyze emotion from diary content
         emotion = await self.emotion_analyzer.analyze(content)
@@ -104,6 +108,8 @@ class DiaryService:
         )
 
         diary = await self.diary_repository.create(diary)
+        if chat_session_id:
+            await self.end_chat_session(chat_session_id)
 
         return diary
 
