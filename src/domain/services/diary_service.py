@@ -179,18 +179,19 @@ class DiaryService:
         diary_content = diary.content
 
         img_url = await self.image_generator.generate(
-            prompt=f"""Based on this diary entry, create a beautiful Japanese anime-style illustration:
+            prompt=f"""Create an illustration inspired by this diary entry:
 
 {diary_content}
 
-Style: Japanese anime background art (similar to Your Name, Weathering with You, A Silent Voice)
-- Hyper-detailed anime background painting style
-- Photorealistic lighting with anime aesthetics
-- Beautiful sky with dramatic clouds
-- Cinematic atmosphere with warm or cool tones depending on the mood
-- Sharp details in foreground, softer focus in background
+Style: Evocative watercolor and soft oil painting blend
+- Dreamlike, impressionistic atmosphere with gentle brush textures
+- Muted, earthy color palette with occasional warm accents — like faded photographs or old watercolor postcards
+- Soft natural lighting that feels like a quiet memory: golden hour, overcast mornings, or dim lamplight
+- Minimal or no human figures — convey emotion through landscape, objects, and atmosphere alone
+- Depth through layered washes and subtle gradients, not sharp detail
+- The mood of a handwritten letter or a page from a worn journal
 
-Capture the emotion and scene from the diary naturally. Let the diary content guide the composition, setting, time of day, and mood. Don't force specific elements - interpret the diary's atmosphere freely."""
+Interpret the diary's emotional undertone through composition, light, and negative space. Let the image breathe."""
         )
 
         return img_url
